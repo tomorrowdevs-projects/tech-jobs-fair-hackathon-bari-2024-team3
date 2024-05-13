@@ -16,9 +16,15 @@ func getHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	var session_token, err = http.Get("https://opentdb.com/api_token.php?command=request")
+
 	http.HandleFunc("/", getRoot)
+
 	http.HandleFunc("/hello", getHello)
 
 	http.ListenAndServe(":3333", nil)
 
 }
+
+// https://opentdb.com/api.php?amount=10
