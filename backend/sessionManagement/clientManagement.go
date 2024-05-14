@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-var peers = make(map[string]net.Conn)
+var allConnectedClients = make(map[string]net.Conn)
 
 func SocketListenerLoop() {
 
 	//Connect via terminal on: $ telnet 127.0.0.1 8080
-	listener, err := net.Listen("tcp", ":8080")
+	listener, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -26,11 +26,6 @@ func SocketListenerLoop() {
 			fmt.Println("Error:", err)
 			continue
 		}
-
-		addString := conn.RemoteAddr().String()
-		peers[conn.RemoteAddr().String()] = conn
-		fmt.Printf("Handling connection: %s\n", addString)
-
 		go handleConnection(conn)
 
 	}
@@ -39,20 +34,22 @@ func SocketListenerLoop() {
 
 func handleConnection(conn net.Conn) {
 
-	fmt.Println("Accepted connection from", conn.RemoteAddr())
-	conn.Write([]byte("Welcome to the game!\n"))
+	connectionAddr := conn.RemoteAddr().String()
+	allConnectedClients[connectionAddr] = conn
+	fmt.Println("Accepted connection from", connectionAddr)
 
 	for {
 		conn.Write([]byte("How can we be of any help today?\n"))
 		readBuffer := make([]byte, 10000)
 		conn.Read(readBuffer)
 		msg := string(readBuffer)
+
 		if strings.Contains(msg, "bye") {
 			println("Closing down connection")
 			break
 		} else if strings.Contains(msg, "greetAll") {
-			fmt.Println("Greetings from ", conn.RemoteAddr())
-			greetAll()
+			fmt.Println("Greetings from ", connectionAddr)
+			broadcastToAllClients("Hello everyone!\n")
 
 		} else {
 			println("Reading:", msg)
@@ -63,8 +60,12 @@ func handleConnection(conn net.Conn) {
 
 }
 
-func greetAll() {
-	for _, peer := range peers {
-		peer.Write([]byte("Hello everyone!\n"))
+func broadcastToAllClients(msg string) {
+	broadcastToClients(msg, allConnectedClients)
+}
+
+func broadcastToClients(msg string, clients map[string]net.Conn) {
+	for _, client := range clients {
+		client.Write([]byte(msg))
 	}
 }
