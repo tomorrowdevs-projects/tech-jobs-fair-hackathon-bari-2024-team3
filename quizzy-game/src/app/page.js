@@ -5,29 +5,17 @@ import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@
 export default function Home() {
   
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="flex-start"
-      alignItems="center"
-      height="100vh"
-    >
-      <Image
-        src="/image-logo.svg"
-        alt="Descrizione dell'immagine"
-        width="256px"
-        height="256px"
-        marginTop="180px" 
+    <Box className="box">
 
-      />
+      <Image src="/image-logo.svg" alt="Descrizione dell'immagine" className="image"/>
       
       <Flex alignItems="center" flexDirection="column" marginTop="190px">
         <InputGroup>
-          <InputLeftElement pointerEvents='none'>
-          </InputLeftElement>
-          <Input type='rom' placeholder='Room Code' width="315px" height="48px" border="2px"/>
+          <InputLeftElement pointerEvents='none'></InputLeftElement>
+          <Input type='rom' placeholder='Room Code' className='input-room-code'/>
         </InputGroup>
-
+        
+        <Link href="#" passHref>
           <Button
             as="a"
             size="lg"
@@ -42,6 +30,8 @@ export default function Home() {
           >
             Enter
           </Button>
+        </Link>
+        <Link href="#" passHref>
           <Button
             as="a"
             size="lg"
@@ -58,7 +48,9 @@ export default function Home() {
             color="black"
           >
             +
-          </Button>        
+          </Button>
+        </Link>
+        
       </Flex>
     </Box>
   );
