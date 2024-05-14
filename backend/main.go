@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"quizzy_game/api"
+	"quizzy_game/sessionManagement"
 )
 
 func getFrontPage(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,9 @@ func main() {
 	http.HandleFunc("/questions", api.GetQuestions)
 	http.HandleFunc("/categories", api.GetCategories)
 
-	http.ListenAndServe(":3333", nil)
+	// http.ListenAndServe(":3333", nil)
+
+	sessionManagement.SocketListenerLoop()
 
 }
 
