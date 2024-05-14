@@ -38,6 +38,8 @@ export default function Home() {
             borderColor="green.500"
             marginTop="20px"
             bg="#ECC94B"
+            style={{ pointerEvents: 'none' }}
+            color="black"
           >
             Enter
           </Button>
@@ -55,6 +57,8 @@ export default function Home() {
             marginLeft="280px"
             fontSize="24px"
             lineHeight="40px" 
+            style={{ pointerEvents: 'none' }}
+            color="black"
           >
             +
           </Button>
