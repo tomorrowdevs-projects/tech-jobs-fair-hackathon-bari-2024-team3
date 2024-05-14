@@ -19,9 +19,11 @@ func main() {
 	http.HandleFunc("/", getFrontPage)
 	http.HandleFunc("/questions", api.GetQuestions)
 	http.HandleFunc("/categories", api.GetCategories)
+	http.HandleFunc("/ws", sessionManagement.WsEndpoint)
 
-	// http.ListenAndServe(":3333", nil)
+	http.ListenAndServe(":3333", nil)
 
-	sessionManagement.SocketListenerLoop()
+	
+	
 
 }

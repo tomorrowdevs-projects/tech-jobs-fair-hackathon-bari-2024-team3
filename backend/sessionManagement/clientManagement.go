@@ -2,70 +2,55 @@ package sessionManagement
 
 import (
 	"fmt"
+	"github.com/gorilla/websocket"
+	"log"
 	"net"
-	"strings"
+	"net/http"
+	// "strings"
 )
 
 var allConnectedClients = make(map[string]net.Conn)
 
-func SocketListenerLoop() {
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
-	//Connect via terminal on: $ telnet 127.0.0.1 8080
-	listener, err := net.Listen("tcp", "127.0.0.1:8080")
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	fmt.Printf("Listening for %s on: %s\n", listener.Addr().Network(), listener.Addr().String())
-
-	defer listener.Close()
-
+func reader(conn *websocket.Conn) {
 	for {
-		conn, err := listener.Accept()
+		// read in a message
+		messageType, p, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Error:", err)
-			continue
+			log.Println(err)
+			return
 		}
-		go handleConnection(conn)
+		// print out that message for clarity
+		fmt.Println(string(p))
 
-	}
-
-}
-
-func handleConnection(conn net.Conn) {
-
-	connectionAddr := conn.RemoteAddr().String()
-	allConnectedClients[connectionAddr] = conn
-	fmt.Println("Accepted connection from", connectionAddr)
-
-	for {
-		conn.Write([]byte("How can we be of any help today?\n"))
-		readBuffer := make([]byte, 10000)
-		conn.Read(readBuffer)
-		msg := string(readBuffer)
-
-		if strings.Contains(msg, "bye") {
-			println("Closing down connection")
-			break
-		} else if strings.Contains(msg, "greetAll") {
-			fmt.Println("Greetings from ", connectionAddr)
-			broadcastToAllClients("Hello everyone!\n")
-
-		} else {
-			println("Reading:", msg)
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+			return
 		}
+
 	}
-
-	defer conn.Close()
-
 }
 
-func broadcastToAllClients(msg string) {
-	broadcastToClients(msg, allConnectedClients)
-}
+func WsEndpoint(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-func broadcastToClients(msg string, clients map[string]net.Conn) {
-	for _, client := range clients {
-		client.Write([]byte(msg))
+	// upgrade this connection to a WebSocket
+	// connection
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
 	}
+
+	log.Println("Client Connected")
+	err = ws.WriteMessage(1, []byte("Hi Client!"))
+	if err != nil {
+		log.Println(err)
+	}
+	// listen indefinitely for new messages coming
+	// through on our WebSocket connection
+	reader(ws)
 }
