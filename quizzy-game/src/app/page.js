@@ -1,5 +1,5 @@
+
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
-import Link from 'next/link';
 
 
 export default function Home() {
@@ -27,8 +27,7 @@ export default function Home() {
           </InputLeftElement>
           <Input type='rom' placeholder='Room Code' width="315px" height="48px" border="2px"/>
         </InputGroup>
-        
-        <Link href="#" passHref>
+
           <Button
             as="a"
             size="lg"
@@ -43,8 +42,6 @@ export default function Home() {
           >
             Enter
           </Button>
-        </Link>
-        <Link href="#" passHref>
           <Button
             as="a"
             size="lg"
@@ -61,9 +58,7 @@ export default function Home() {
             color="black"
           >
             +
-          </Button>
-        </Link>
-        
+          </Button>        
       </Flex>
     </Box>
   );
