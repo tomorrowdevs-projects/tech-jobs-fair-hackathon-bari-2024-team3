@@ -14,8 +14,6 @@ export default function Home() {
           <InputLeftElement pointerEvents='none'></InputLeftElement>
           <Input type='rom' placeholder='Room Code' className='input-room-code'/>
         </InputGroup>
-        
-        <Link href="#" passHref>
           <Button
             as="a"
             size="lg"
@@ -30,8 +28,6 @@ export default function Home() {
           >
             Enter
           </Button>
-        </Link>
-        <Link href="#" passHref>
           <Button
             as="a"
             size="lg"
@@ -49,8 +45,6 @@ export default function Home() {
           >
             +
           </Button>
-        </Link>
-        
       </Flex>
     </Box>
   );
