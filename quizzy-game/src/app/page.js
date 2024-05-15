@@ -1,4 +1,4 @@
-
+'user client'
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
 import Link from 'next/link';
 
@@ -14,6 +14,7 @@ export default function Home() {
           <InputLeftElement pointerEvents='none'></InputLeftElement>
           <Input type='rom' placeholder='Room Code' className='input-room-code'/>
         </InputGroup>
+        <Link href="#">
           <Button
             as="a"
             size="lg"
@@ -26,10 +27,10 @@ export default function Home() {
             style={{ pointerEvents: 'none' }}
             color="black"
           >
-            <Link>
-            </Link>
             Enter
           </Button>
+          </Link>
+          <Link href="#">
           <Button
             as="a"
             size="lg"
@@ -44,11 +45,10 @@ export default function Home() {
             lineHeight="40px" 
             style={{ pointerEvents: 'none' }}
             color="black"
-          >
-            <Link>
-            </Link>
+          > 
             +
           </Button>
+          </Link>
       </Flex>
     </Box>
   );
