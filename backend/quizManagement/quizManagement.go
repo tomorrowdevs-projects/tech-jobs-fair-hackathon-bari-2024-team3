@@ -7,6 +7,15 @@ import (
 
 var quizzes = make(map[string]dataTypes.Quiz)
 
+func HandleQuiz(quizUpdate string) {
+
+	/* TODO:
+	/ Take ind the quiz commands/request from the WebSocket and decide what to do and which of the functions to call.
+	/
+	*/
+
+}
+
 func createQuiz(category dataTypes.Category) {
 	action := "CREATE"
 	fmt.Printf("You are trying to %s Quiz %s, but the functionality has not yet been implemented!", action, id)

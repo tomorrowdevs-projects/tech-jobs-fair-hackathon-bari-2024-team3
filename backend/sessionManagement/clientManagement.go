@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	quizmanagement "quizzy_game/quizManagement"
+	usermanagement "quizzy_game/userManagement"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,6 +16,17 @@ var allConnectedClients = make(map[string]net.Conn)
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+}
+
+func handleRequest(request string) {
+
+	// TODO Add some handler logic deciding if the request needs to go to userManaging or quizManaging
+	// if isUserReq {
+	usermanagement.HandleUser(request)
+	// }else{
+	quizmanagement.HandleQuiz(request)
+	// }
+
 }
 
 func reader(conn *websocket.Conn) {
@@ -26,6 +39,7 @@ func reader(conn *websocket.Conn) {
 		}
 		// print out that message for clarity
 		fmt.Println(string(p))
+		handleRequest(string(p))
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
 			log.Println(err)
