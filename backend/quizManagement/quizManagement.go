@@ -18,7 +18,7 @@ func HandleQuiz(quizUpdate string) {
 
 func createQuiz(category dataTypes.Category) {
 	action := "CREATE"
-	fmt.Printf("You are trying to %s Quiz %s, but the functionality has not yet been implemented!", action, id)
+	fmt.Printf("You are trying to %s Quiz %s, but the functionality has not yet been implemented!", action)
 }
 
 func joinQuiz(id string) {
