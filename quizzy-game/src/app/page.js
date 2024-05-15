@@ -1,6 +1,7 @@
 'user client'
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
 import Link from 'next/link';
+import './page-module.css';
 
 export default function Home() {
   return (
