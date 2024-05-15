@@ -1,6 +1,6 @@
 
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
-
+import Link from 'next/link';
 
 export default function Home() {
   
@@ -26,6 +26,8 @@ export default function Home() {
             style={{ pointerEvents: 'none' }}
             color="black"
           >
+            <Link>
+            </Link>
             Enter
           </Button>
           <Button
@@ -43,6 +45,8 @@ export default function Home() {
             style={{ pointerEvents: 'none' }}
             color="black"
           >
+            <Link>
+            </Link>
             +
           </Button>
       </Flex>
