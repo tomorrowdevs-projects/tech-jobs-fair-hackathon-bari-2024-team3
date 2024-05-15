@@ -2,69 +2,69 @@ package sessionManagement
 
 import (
 	"fmt"
+	"log"
 	"net"
-	"strings"
+	"net/http"
+	quizmanagement "quizzy_game/quizManagement"
+	usermanagement "quizzy_game/userManagement"
+
+	"github.com/gorilla/websocket"
 )
 
-var peers = make(map[string]net.Conn)
+var allConnectedClients = make(map[string]net.Conn)
 
-func SocketListenerLoop() {
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
-	//Connect via terminal on: $ telnet 127.0.0.1 8080
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	fmt.Printf("Listening for %s on: %s\n", listener.Addr().Network(), listener.Addr().String())
+func handleRequest(request string) {
 
-	defer listener.Close()
+	// TODO Add some handler logic deciding if the request needs to go to userManaging or quizManaging
+	// if isUserReq {
+	usermanagement.HandleUser(request)
+	// }else{
+	quizmanagement.HandleQuiz(request)
+	// }
 
+}
+
+func reader(conn *websocket.Conn) {
 	for {
-		conn, err := listener.Accept()
+		// read in a message
+		messageType, p, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Error:", err)
-			continue
+			log.Println(err)
+			return
+		}
+		// print out that message for clarity
+		fmt.Println(string(p))
+		handleRequest(string(p))
+
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+			return
 		}
 
-		addString := conn.RemoteAddr().String()
-		peers[conn.RemoteAddr().String()] = conn
-		fmt.Printf("Handling connection: %s\n", addString)
-
-		go handleConnection(conn)
-
 	}
-
 }
 
-func handleConnection(conn net.Conn) {
+func WsEndpoint(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	fmt.Println("Accepted connection from", conn.RemoteAddr())
-	conn.Write([]byte("Welcome to the game!\n"))
-
-	for {
-		conn.Write([]byte("How can we be of any help today?\n"))
-		readBuffer := make([]byte, 10000)
-		conn.Read(readBuffer)
-		msg := string(readBuffer)
-		if strings.Contains(msg, "bye") {
-			println("Closing down connection")
-			break
-		} else if strings.Contains(msg, "greetAll") {
-			fmt.Println("Greetings from ", conn.RemoteAddr())
-			greetAll()
-
-		} else {
-			println("Reading:", msg)
-		}
+	// upgrade this connection to a WebSocket
+	// connection
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
 	}
 
-	defer conn.Close()
-
-}
-
-func greetAll() {
-	for _, peer := range peers {
-		peer.Write([]byte("Hello everyone!\n"))
+	log.Println("Client Connected")
+	err = ws.WriteMessage(1, []byte("Hi Client!"))
+	if err != nil {
+		log.Println(err)
 	}
+	// listen indefinitely for new messages coming
+	// through on our WebSocket connection
+	reader(ws)
 }
