@@ -9,12 +9,49 @@ import (
 	"quizzy_game/internal/dataTypes"
 )
 
-type QuestionResponse struct {
-	ResponseCode int                  `json:"response_code"`
-	Questions    []dataTypes.Question `json:"results"`
+func GetQuestionsWeb(w http.ResponseWriter, r *http.Request) {
+
+	questions := GetQuestions()
+
+	fmt.Printf("got /questions request\n")
+	for _, question := range questions {
+		io.WriteString(w, question.String())
+	}
 }
 
-func GetQuestions(w http.ResponseWriter, r *http.Request) {
+func GetCategoriesWeb(w http.ResponseWriter, r *http.Request) {
+
+	categories := GetCategories()
+
+	fmt.Printf("got /categories request with %d categories\n", len(categories))
+	for _, cat := range categories {
+		io.WriteString(w, cat.String())
+	}
+}
+
+func GetCategories() []dataTypes.Category {
+
+	type CategoryResponse struct {
+		Categories []dataTypes.Category `json:"trivia_categories"`
+	}
+
+	categoryRequestUrl := "https://opentdb.com/api_category.php"
+	responseBody := getRequest(categoryRequestUrl)
+
+	var cr CategoryResponse
+	var err = json.Unmarshal(responseBody, &cr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return cr.Categories
+}
+
+func GetQuestions() []dataTypes.Question {
+
+	type QuestionResponse struct {
+		ResponseCode int                  `json:"response_code"`
+		Questions    []dataTypes.Question `json:"results"`
+	}
 
 	questionRequestUrl := "https://opentdb.com/api.php?amount=10"
 	responseBody := getSessionRequest(questionRequestUrl)
@@ -24,30 +61,5 @@ func GetQuestions(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Printf("got /questions request\n")
-	for i := 0; i < len(qr.Questions); i++ {
-		io.WriteString(w, qr.Questions[i].String())
-	}
-}
-
-type CategoryResponse struct {
-	Categories []dataTypes.Category `json:"trivia_categories"`
-}
-
-func GetCategories(w http.ResponseWriter, r *http.Request) {
-
-	questionRequestUrl := "https://opentdb.com/api_category.php"
-	responseBody := getRequest(questionRequestUrl)
-
-	var cr CategoryResponse
-	var err = json.Unmarshal(responseBody, &cr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("got /categories request with %d categories\n", len(cr.Categories))
-	for i := 0; i < len(cr.Categories); i++ {
-		io.WriteString(w, cr.Categories[i].String())
-	}
+	return qr.Questions
 }

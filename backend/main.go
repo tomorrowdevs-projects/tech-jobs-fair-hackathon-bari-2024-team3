@@ -17,13 +17,10 @@ func main() {
 	// Should we keep the token if app crashes? And what if app is closed? (Would say forget and get a new one)
 
 	http.HandleFunc("/", getFrontPage)
-	http.HandleFunc("/questions", api.GetQuestions)
-	http.HandleFunc("/categories", api.GetCategories)
+	http.HandleFunc("/questions", api.GetQuestionsWeb)
+	http.HandleFunc("/categories", api.GetCategoriesWeb)
 	http.HandleFunc("/ws", sessionManagement.WsEndpoint)
 
 	http.ListenAndServe(":3333", nil)
-
-	
-	
 
 }

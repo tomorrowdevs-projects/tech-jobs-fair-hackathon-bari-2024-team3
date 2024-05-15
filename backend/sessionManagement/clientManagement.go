@@ -2,11 +2,11 @@ package sessionManagement
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
 	"log"
 	"net"
 	"net/http"
-	// "strings"
+
+	"github.com/gorilla/websocket"
 )
 
 var allConnectedClients = make(map[string]net.Conn)
