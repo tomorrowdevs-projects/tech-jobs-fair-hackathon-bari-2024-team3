@@ -1,0 +1,21 @@
+.box{
+    background-color: #3182CE;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.image{
+    margin: 0rem;
+}
+
+.tableContainer{
+    background-color: white;
+    height: auto;
+    width: 20rem;
+    border-radius: 0.5rem;
+}
+.titleTable{
+    color: #2D3748;
+    text-align: center;
+}
