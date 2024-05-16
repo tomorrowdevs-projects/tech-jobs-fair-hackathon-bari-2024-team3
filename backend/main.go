@@ -14,7 +14,6 @@ func getFrontPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	//postman connect via postman: ws://localhost:3333/ws
 	http.HandleFunc("/", getFrontPage)
 	http.HandleFunc("/questions", api.GetQuestionsWeb)
 	http.HandleFunc("/categories", api.GetCategoriesWeb)
