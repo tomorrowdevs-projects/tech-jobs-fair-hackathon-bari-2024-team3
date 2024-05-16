@@ -6,7 +6,7 @@ import './style/style-new-game-id.css';
 const GamePage = () => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentIndex, setCurrentIndex] = useState(0); // Stato per l'indice della domanda corrente
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -50,7 +50,7 @@ const GamePage = () => {
                             placeholder="Inserisci il codice della stanza"
                             className="input-room-code"
                             value={currentQuestion ? currentQuestion.question : ''}
-                            readOnly // Rendi l'input di sola lettura
+                            readOnly
                         />
                     </InputGroup>
                     {currentQuestion && (
