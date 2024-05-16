@@ -23,22 +23,15 @@ func init() {
 
 }
 
-func HandleQuiz(quizUpdate string) {
-
-	/*
-		commands:
-		createQuiz FirstQuiz Christian
-		joinQuiz <quizId> Jack
-		joinQuiz 05126db1-dbb2-49a3-b187-9bbe46bc48a4 Jack
-		print
-	*/
+func HandleQuizUpdate(quizUpdate string, responseChannel chan string) {
 
 	fmt.Println("Quiz update: ", quizUpdate)
 	input := strings.Fields(quizUpdate)
 
 	switch input[0] {
 	case "createQuiz":
-		createQuiz(input[1], categories[0], dataTypes.Easy, dataTypes.MultipleChoice, input[2])
+		//TODO Fix hardcoded Values: Categories, difficulty and type
+		responseChannel <- createQuiz(input[1], categories[0], dataTypes.Easy, dataTypes.MultipleChoice, input[2])
 	case "joinQuiz":
 		joinQuiz(input[1], input[2])
 	case "leaveQuiz":
@@ -54,7 +47,7 @@ func HandleQuiz(quizUpdate string) {
 
 }
 
-func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.Difficulty, quizType dataTypes.QuestionType, userId string) {
+func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.Difficulty, quizType dataTypes.QuestionType, userId string) string {
 
 	participants := make(map[string]int)
 	participants[userId] = 0
@@ -76,6 +69,7 @@ func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.D
 
 	quizzes[newQuiz.Id] = &newQuiz
 	fmt.Printf("Sucessfully created Quiz %s with ID: %s\n", newQuiz.Name, newQuiz.Id)
+	return fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s ", newQuiz.Id, newQuiz.QuizStatus, newQuiz.ParticipantsAsString())
 }
 
 // Use a reference to user instead of a userIdString
@@ -90,6 +84,8 @@ func joinQuiz(quizID string, userId string) {
 		quiz.Participants[userId] = 0
 		fmt.Printf("Added user %s to Quiz: %s\n", userId, quizID)
 	}
+	fmt.Printf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
+
 }
 
 // Use a reference to user instead of a userIdString
@@ -103,6 +99,8 @@ func leaveQuiz(quizID string, userId string) {
 		delete(quiz.Participants, userId)
 		fmt.Printf("Deleted user %s from Quiz %s: ", userId, quizID)
 	}
+	fmt.Printf("User: %s left Quiz QuizID: %s\n", userId, quiz.Id)
+
 }
 
 func startQuiz(quizID string) {

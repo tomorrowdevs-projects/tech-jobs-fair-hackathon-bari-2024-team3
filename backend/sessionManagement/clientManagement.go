@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	quizmanagement "quizzy_game/quizManagement"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -17,34 +18,46 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func handleRequest(request string) {
-
-	// TODO Add some handler logic deciding if the request needs to go to userManaging or quizManaging
-	// if isUserReq {
-	// usermanagement.HandleUser(request)
-	// }else{
-	quizmanagement.HandleQuiz(request)
-	// }
-
-}
-
 func reader(conn *websocket.Conn) {
+	responseChan := make(chan string, 1)
+	var mutex sync.Mutex // Create a mutex to synchronize writes to the WebSocket connection
+
+	go func() {
+		for {
+			data, more := <-responseChan
+			if more {
+				mutex.Lock()
+				err := conn.WriteMessage(websocket.TextMessage, []byte(data))
+				mutex.Unlock()
+				if err != nil {
+					fmt.Println("Error writing to WebSocket:", err)
+					break
+				}
+			} else {
+				break
+			}
+		}
+	}()
+
 	for {
-		// read in a message
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
+			close(responseChan)
 			return
 		}
-		// print out that message for clarity
-		fmt.Println(string(p))
-		handleRequest(string(p))
 
-		if err := conn.WriteMessage(messageType, p); err != nil {
+		// Adding data to the channel should also be synchronized
+		mutex.Lock()
+		quizmanagement.HandleQuizUpdate(string(p), responseChan)
+		err = conn.WriteMessage(messageType, p)
+		mutex.Unlock()
+
+		if err != nil {
 			log.Println(err)
+			close(responseChan)
 			return
 		}
-
 	}
 }
 

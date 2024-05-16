@@ -35,3 +35,11 @@ func (q Quiz) RemainingQuestions() int {
 
 	return unaskedCounter
 }
+
+func (q Quiz) ParticipantsAsString() string {
+	participantsString := ""
+	for pName := range q.Participants {
+		participantsString += ", " + pName
+	}
+	return participantsString
+}
