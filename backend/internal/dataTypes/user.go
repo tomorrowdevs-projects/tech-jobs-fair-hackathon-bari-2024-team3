@@ -5,7 +5,3 @@ type User struct {
 	Name       string      `json:"name"`
 	MsgChannel chan string `json:"-"`
 }
-
-func (q User) String() string {
-	return string(q.Name)
-}

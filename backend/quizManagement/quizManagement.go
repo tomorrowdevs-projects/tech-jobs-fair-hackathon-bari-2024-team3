@@ -115,26 +115,29 @@ func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.D
 	return newQuiz.Id
 }
 
-func joinQuiz(quizID string, userId string, responseChan chan string) string {
+func joinQuiz(quizID string, username string, responseChan chan string) string {
 	quiz, ok := quizzes[quizID]
 	if !ok {
 		fmt.Println("Quiz not found.")
 		return "Error joining Quiz: " + quizID
 	}
-	if _, ok := quiz.Participants[userId]; !ok {
-		// User does not exist, so insert the user
-		newUser := dataTypes.User{
-			Id:         uuid.NewString(),
-			Name:       "",
-			MsgChannel: responseChan,
-		}
-		participantsTuple := dataTypes.ParticipantsTuple{
-			Ref:   &newUser,
-			Score: 0,
-		}
-		quiz.Participants[newUser.Id] = participantsTuple
-		fmt.Printf("Added user %s to Quiz: %s\n", userId, quizID)
+	if _, ok := quiz.Participants[username]; ok {
+		fmt.Println("Error Joining Quiz. UserName is already exist.")
+		return fmt.Sprintf("Error joining Quiz: %s, QuizID:%s with username: %s. UserName is already taken! ", quiz.Name, quizID, username)
+
 	}
+	newUser := dataTypes.User{
+		Id:         uuid.NewString(),
+		Name:       username,
+		MsgChannel: responseChan,
+	}
+	participantsTuple := dataTypes.ParticipantsTuple{
+		Ref:   &newUser,
+		Score: 0,
+	}
+	quiz.Participants[username] = participantsTuple
+	fmt.Printf("Added user %s to Quiz: %s\n", username, quizID)
+
 	msg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
 	broadcastToParticipants(quizID, msg)
 	return "Sucessfully joined the quiz: " + quizID
@@ -142,18 +145,18 @@ func joinQuiz(quizID string, userId string, responseChan chan string) string {
 }
 
 // Use a reference to user instead of a userIdString
-func leaveQuiz(quizID string, userId string) string {
+func leaveQuiz(quizID string, username string) string {
 	quiz, ok := quizzes[quizID]
 	if !ok {
 		return "Error leaving Quiz. Quiz not found. ID: " + quizID
 	}
-	if _, ok := quiz.Participants[userId]; ok {
-		delete(quiz.Participants, userId)
-		fmt.Printf("Deleted user %s from Quiz %s: ", userId, quizID)
+	if _, ok := quiz.Participants[username]; ok {
+		delete(quiz.Participants, username)
+		fmt.Printf("Deleted user %s from Quiz %s: ", username, quizID)
 	}
 	msg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
 	broadcastToParticipants(quizID, msg)
-	return fmt.Sprintf("User: %s left Quiz QuizID: %s\n", userId, quiz.Id)
+	return fmt.Sprintf("User: %s left Quiz QuizID: %s\n", username, quiz.Id)
 
 }
 
