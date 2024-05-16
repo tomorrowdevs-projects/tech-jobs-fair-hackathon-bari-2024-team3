@@ -1,23 +1,68 @@
-'user client'
+'use client';
+import React, { useState, useEffect } from 'react';
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
-import Link from 'next/link';
-import  './style/style-new-game-id.css';
+import './style/style-new-game-id.css';
+
 const GamePage = () => {
-    const idGame = 123; // Valore statico da rendere dinamico
+    const [questions, setQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [currentIndex, setCurrentIndex] = useState(0); // Stato per l'indice della domanda corrente
+
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            try {
+                const response = await fetch('https://opentdb.com/api.php?amount=10');
+                const data = await response.json();
+                if (data.results) {
+                    setQuestions(data.results);
+                } else {
+                    console.error('Invalid response structure:', data);
+                }
+                setLoading(false);
+            } catch (error) {
+                console.error('Errore nel recupero delle domande:', error);
+                setLoading(false);
+            }
+        };
+
+        fetchQuestions();
+    }, []);
+
+    const handleNextQuestion = () => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % questions.length);
+    };
+
+    if (loading) {
+        return <div>Caricamento...</div>;
+    }
+
+    const currentQuestion = questions[currentIndex];
+
     return (
         <div>
-            {/* <h1>Game ID: {idGame}</h1> */}
             <Box className="box">
-                <Image src="/image-logo.svg" alt="Descrizione dell'immagine" className="image"/>
-                <Flex alignItems="center" flexDirection="column" marginTop="100px">
+                <Image src="/image-logo.svg" alt="Descrizione dell'immagine" className="image" />
+                <Flex alignItems="center" flexDirection="column" marginTop="80px">
                     <InputGroup>
-                    <InputLeftElement pointerEvents='none'></InputLeftElement>
-                    <Input type='rom' placeholder='1312lamwlkdaw' className='input-room-code'/>
+                        <InputLeftElement pointerEvents="none"></InputLeftElement>
+                        <Input
+                            type="text"
+                            placeholder="Inserisci il codice della stanza"
+                            className="input-room-code"
+                            value={currentQuestion ? currentQuestion.question : ''}
+                            readOnly // Rendi l'input di sola lettura
+                        />
                     </InputGroup>
-                    <Button className='button-one'>Answer 1</Button>
-                    <Button className='button-one'>Answer 2</Button>
-                    <Button className='button-one'>Answer 3</Button>
-                    <Button className='button-one'>Answer 4</Button>
+                    {currentQuestion && (
+                        <Box className="question-box">
+                            <Flex direction="column">
+                                {[...currentQuestion.incorrect_answers, currentQuestion.correct_answer].map((answer, idx) => (
+                                    <Button key={idx} className="button-one">{answer}</Button>
+                                ))}
+                            </Flex>
+                        </Box>
+                    )}
+                    <Button className="button-next" onClick={handleNextQuestion}>Prossima domanda</Button>
                 </Flex>
             </Box>
         </div>
@@ -25,4 +70,3 @@ const GamePage = () => {
 };
 
 export default GamePage;
-

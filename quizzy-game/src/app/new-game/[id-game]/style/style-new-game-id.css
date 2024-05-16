@@ -5,11 +5,12 @@
     justify-content: flex-start;
     align-items: center;
     height: 100vh;
+    margin-bottom: 20px;
 }
 
 .image{
-    width:256px;
-    height:256px;
+    width:156px;
+    height:156px;
     margin-top:0px; 
 }
 
@@ -34,5 +35,6 @@
     height:146px; 
     border:1px;
     border-radius: 6px;
+    margin-bottom: 10px;
 }
 
