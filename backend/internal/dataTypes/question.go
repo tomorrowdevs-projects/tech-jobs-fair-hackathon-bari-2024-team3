@@ -3,6 +3,7 @@ package dataTypes
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 )
 
 type QuestionTuple struct {
@@ -26,6 +27,14 @@ func (q Question) String() string {
 		return fmt.Sprintf("Error converting Question to JSON: %v", err)
 	}
 	return string(qJSON)
+}
+
+func (q Question) GetOptions() []string {
+	options := append(q.WrongAnswer, q.CorrectAnswer)
+	rand.Shuffle(len(options), func(i, j int) {
+		options[i], options[j] = options[j], options[i]
+	})
+	return options
 }
 
 func (q Question) ToTuple() QuestionTuple {

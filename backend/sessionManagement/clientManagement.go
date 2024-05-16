@@ -3,15 +3,12 @@ package sessionManagement
 import (
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	quizmanagement "quizzy_game/quizManagement"
 	"sync"
 
 	"github.com/gorilla/websocket"
 )
-
-var allConnectedClients = make(map[string]net.Conn)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,

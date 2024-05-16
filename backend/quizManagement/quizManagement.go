@@ -37,32 +37,49 @@ func HandleQuizUpdate(quizUpdate string, responseChannel chan string) {
 			responseChannel <- "Not enough input parameters! Try: createQuiz <quizName> <username>"
 			return
 		}
+		quizName := input[1]
+		username := input[2]
 		//TODO Fix hardcoded Values: Categories, difficulty and type
-		responseChannel <- createQuiz(input[1], categories[0], dataTypes.Easy, dataTypes.MultipleChoice, input[2])
+		newQuizId := createQuiz(quizName, categories[0], dataTypes.Easy, dataTypes.MultipleChoice)
+		newQuiz, ok := quizzes[newQuizId]
+		if !ok {
+			fmt.Println("Quiz not found.")
+			responseChannel <- "Something went wrong. Error Creating Quiz!"
+			return
+		}
+		joinQuiz(newQuizId, username, responseChannel)
+		responseChannel <- fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s ", newQuizId, newQuiz.QuizStatus, newQuiz.ParticipantsAsString())
+
 	case "joinQuiz":
 		if len(input) < 3 {
 			responseChannel <- "Not enough input parameters! Try: joinQuiz <quizID> <username>"
 			return
 		}
-		responseChannel <- joinQuiz(input[1], input[2])
+		quizID := input[1]
+		username := input[2]
+		responseChannel <- joinQuiz(quizID, username, responseChannel)
 	case "leaveQuiz":
 		if len(input) < 3 {
 			responseChannel <- "Not enough input parameters! Try: leaveQuiz <quizID> <username>"
 			return
 		}
-		responseChannel <- leaveQuiz(input[1], input[2])
+		quizID := input[1]
+		username := input[2]
+		responseChannel <- leaveQuiz(quizID, username)
 	case "startQuiz":
 		if len(input) < 2 {
 			responseChannel <- "Not enough input parameters! Try: startQuiz <quizID>"
 			return
 		}
-		responseChannel <- startQuiz(input[1])
+		quizID := input[1]
+		responseChannel <- startQuiz(quizID)
 	case "resetQuiz":
 		if len(input) < 2 {
 			responseChannel <- "Not enough input parameters! Try: resetQuiz <quizID>"
 			return
 		}
-		responseChannel <- resetQuiz(input[1])
+		quizID := input[1]
+		responseChannel <- resetQuiz(quizID)
 	case "print":
 		quizPrintString := "Printing Quizzes: \n"
 		for _, quiz := range quizzes {
@@ -75,10 +92,8 @@ func HandleQuizUpdate(quizUpdate string, responseChannel chan string) {
 
 }
 
-func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.Difficulty, quizType dataTypes.QuestionType, userId string) string {
+func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.Difficulty, quizType dataTypes.QuestionType) string {
 
-	participants := make(map[string]int)
-	participants[userId] = 0
 	questions := api.GetQuestions(category.Id, difficulty, quizType)
 	questionTuples := []dataTypes.QuestionTuple{}
 	for _, question := range questions {
@@ -92,16 +107,15 @@ func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.D
 		Difficulty:   dataTypes.Easy,
 		Type:         dataTypes.MultipleChoice,
 		Questions:    questionTuples,
-		Participants: participants,
+		Participants: make(map[string]dataTypes.ParticipantsTuple),
 	}
 
 	quizzes[newQuiz.Id] = &newQuiz
 	fmt.Printf("Sucessfully created Quiz %s with ID: %s\n", newQuiz.Name, newQuiz.Id)
-	return fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s ", newQuiz.Id, newQuiz.QuizStatus, newQuiz.ParticipantsAsString())
+	return newQuiz.Id
 }
 
-// Use a reference to user instead of a userIdString
-func joinQuiz(quizID string, userId string) string {
+func joinQuiz(quizID string, userId string, responseChan chan string) string {
 	quiz, ok := quizzes[quizID]
 	if !ok {
 		fmt.Println("Quiz not found.")
@@ -109,10 +123,21 @@ func joinQuiz(quizID string, userId string) string {
 	}
 	if _, ok := quiz.Participants[userId]; !ok {
 		// User does not exist, so insert the user
-		quiz.Participants[userId] = 0
+		newUser := dataTypes.User{
+			Id:         uuid.NewString(),
+			Name:       "",
+			MsgChannel: responseChan,
+		}
+		participantsTuple := dataTypes.ParticipantsTuple{
+			Ref:   &newUser,
+			Score: 0,
+		}
+		quiz.Participants[newUser.Id] = participantsTuple
 		fmt.Printf("Added user %s to Quiz: %s\n", userId, quizID)
 	}
-	return fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
+	msg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
+	broadcastToParticipants(quizID, msg)
+	return "Sucessfully joined the quiz: " + quizID
 
 }
 
@@ -126,6 +151,8 @@ func leaveQuiz(quizID string, userId string) string {
 		delete(quiz.Participants, userId)
 		fmt.Printf("Deleted user %s from Quiz %s: ", userId, quizID)
 	}
+	msg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
+	broadcastToParticipants(quizID, msg)
 	return fmt.Sprintf("User: %s left Quiz QuizID: %s\n", userId, quiz.Id)
 
 }
@@ -145,24 +172,22 @@ func startQuiz(quizID string) string {
 
 		var wg sync.WaitGroup
 		broadcastChannel := make(chan string)
-		receiverChannel := make(chan string)
 		statusChannel := make(chan dataTypes.QuizStatus)
 
 		wg.Add(1)
 		go timerRoutine(&wg, statusChannel)
 
 		wg.Add(1)
-		go questionLoopRoutine(quizID, &wg, statusChannel, broadcastChannel)
-
-		wg.Wait() // Wait for all goroutines to finish
+		go questionLoopRoutine(quizID, &wg, statusChannel)
 
 		quiz.QuizStatus = dataTypes.StatusEnded
 		fmt.Println("Quiz Status updated to: ", dataTypes.StatusEnded)
-		broadcastChannel <- fmt.Sprintf("Quiz %s finished. Scoreboard is: %s", quiz.Name, quiz.ScoreBoard())
+		scoreBoardMsg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
+		broadcastToParticipants(quizID, scoreBoardMsg)
 
 		close(broadcastChannel)
-		close(receiverChannel)
 		close(statusChannel)
+		wg.Wait() // Wait for all goroutines to finish
 	}
 	return fmt.Sprintf("Sucessfully started quiz with ID: %s\n", quiz.Id)
 }
@@ -180,8 +205,8 @@ func resetQuiz(quizID string) string {
 	}
 	fmt.Println("Questions reset for Quiz with ID: ", quiz.Id)
 
-	for userId := range quiz.Participants {
-		quiz.Participants[userId] = 0
+	for _, participant := range quiz.Participants {
+		participant.Score = 0
 	}
 	fmt.Println("Scores for users reset for Quiz with ID: ", quiz.Id)
 
@@ -190,7 +215,7 @@ func resetQuiz(quizID string) string {
 
 }
 
-func questionLoopRoutine(quizID string, wg *sync.WaitGroup, statusChannel chan dataTypes.QuizStatus, broadcastChannel chan string) {
+func questionLoopRoutine(quizID string, wg *sync.WaitGroup, statusChannel chan dataTypes.QuizStatus) {
 	quiz, ok := quizzes[quizID]
 	if !ok {
 		fmt.Println("Question Loop: Quiz not found.")
@@ -206,10 +231,15 @@ func questionLoopRoutine(quizID string, wg *sync.WaitGroup, statusChannel chan d
 		if question.IsAskedStatus {
 			break
 		}
+
 		quiz.QuizStatus = dataTypes.StatusQuizTime
 		fmt.Println("Quiz Status updated to: ", dataTypes.StatusQuizTime)
-		broadcastChannel <- question.Ref.Question
+
+		quizMsg := fmt.Sprintf("Question: %s, Options: %s, CorrectAnswer: %s",
+			question.Ref.Question, question.Ref.GetOptions(), question.Ref.CorrectAnswer)
+		broadcastToParticipants(quizID, quizMsg)
 		statusChannel <- dataTypes.StatusQuizTime
+
 		question.IsAskedStatus = true
 
 		for status := range statusChannel {
@@ -255,4 +285,15 @@ func timerRoutine(wg *sync.WaitGroup, statusChannel chan dataTypes.QuizStatus) {
 		}
 	}
 
+}
+
+func broadcastToParticipants(quizID string, msg string) {
+	quiz, ok := quizzes[quizID]
+	if !ok {
+		fmt.Println("Quiz not found.")
+		return
+	}
+	for _, participant := range quiz.Participants {
+		participant.Ref.MsgChannel <- msg
+	}
 }
