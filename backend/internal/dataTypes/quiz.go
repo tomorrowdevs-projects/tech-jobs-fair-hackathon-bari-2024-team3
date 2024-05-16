@@ -3,6 +3,7 @@ package dataTypes
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // TODO: Need to have a participant/user type defined
@@ -37,9 +38,18 @@ func (q Quiz) RemainingQuestions() int {
 }
 
 func (q Quiz) ParticipantsAsString() string {
-	participantsString := ""
-	for pName := range q.Participants {
-		participantsString += ", " + pName
+	var names []string
+	for name := range q.Participants {
+		names = append(names, name)
 	}
-	return participantsString
+	return strings.Join(names, ", ")
+}
+
+func (q Quiz) ScoreBoard() string {
+	var scoresList []string
+	for name, points := range q.Participants {
+		scoresList = append(scoresList, fmt.Sprintf("%s: %d", name, points))
+	}
+	return strings.Join(scoresList, ", ")
+
 }
