@@ -51,6 +51,8 @@ const GamePage = () => {
                             className="input-room-code"
                             value={currentQuestion ? currentQuestion.question : ''}
                             readOnly
+                            
+                            
                         />
                     </InputGroup>
                     {currentQuestion && (
