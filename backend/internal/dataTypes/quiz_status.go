@@ -3,9 +3,11 @@ package dataTypes
 type QuizStatus string
 
 const (
-	Initializing = "initializing"
-	Holding      = "holding"
-	QuizTime     = "quizTime"
-	Evaluation   = "evaluation"
-	Ended        = "ended"
+	StatusInitialized     = "initialized"
+	StatusStart           = "start"
+	StatusQuizTime        = "quizTime"
+	StatusQuizTimeEnded   = "quizTimeEnded"
+	StatusEvaluation      = "evaluation"
+	StatusEvaluationEnded = "evaluationEnded"
+	StatusEnded           = "ended"
 )

@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	quizmanagement "quizzy_game/quizManagement"
-	usermanagement "quizzy_game/userManagement"
 
 	"github.com/gorilla/websocket"
 )
@@ -22,7 +21,7 @@ func handleRequest(request string) {
 
 	// TODO Add some handler logic deciding if the request needs to go to userManaging or quizManaging
 	// if isUserReq {
-	usermanagement.HandleUser(request)
+	// usermanagement.HandleUser(request)
 	// }else{
 	quizmanagement.HandleQuiz(request)
 	// }

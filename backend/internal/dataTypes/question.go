@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+type QuestionTuple struct {
+	Ref           *Question
+	IsAskedStatus bool
+}
+
 type Question struct {
 	Type          QuestionType `json:"type"`
 	Difficulty    string       `json:"difficulty"`
@@ -21,4 +26,12 @@ func (q Question) String() string {
 		return fmt.Sprintf("Error converting Question to JSON: %v", err)
 	}
 	return string(qJSON)
+}
+
+func (q Question) ToTuple() QuestionTuple {
+	return QuestionTuple{&q, false}
+}
+
+func (qt QuestionTuple) IsNotAsked() bool {
+	return !qt.IsAskedStatus
 }

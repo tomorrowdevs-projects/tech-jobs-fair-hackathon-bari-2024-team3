@@ -7,16 +7,24 @@ import (
 	"log"
 	"net/http"
 	"quizzy_game/internal/dataTypes"
+	"strconv"
+	"time"
 )
 
 func GetQuestionsWeb(w http.ResponseWriter, r *http.Request) {
 
-	questions := GetQuestions()
+	for x := 10; x < 33; x += 7 {
+		timer := time.NewTimer(7 * time.Second)
+		questions := GetQuestions(x, dataTypes.Easy, dataTypes.MultipleChoice)
+		// https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple
 
-	fmt.Printf("got /questions request\n")
-	for _, question := range questions {
-		io.WriteString(w, question.String())
+		fmt.Printf("got /questions request\n")
+		for _, question := range questions {
+			io.WriteString(w, question.String())
+		}
+		<-timer.C
 	}
+
 }
 
 func GetCategoriesWeb(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +54,7 @@ func GetCategories() []dataTypes.Category {
 	return cr.Categories
 }
 
-func GetQuestions() []dataTypes.Question {
+func GetQuestions(categoryId int, difficulty dataTypes.Difficulty, quizType dataTypes.QuestionType) []dataTypes.Question {
 
 	type QuestionResponse struct {
 		ResponseCode int                  `json:"response_code"`
@@ -54,12 +62,42 @@ func GetQuestions() []dataTypes.Question {
 	}
 
 	questionRequestUrl := "https://opentdb.com/api.php?amount=10"
+	questionRequestUrl += "&category=" + strconv.Itoa(categoryId)
+	questionRequestUrl += "&difficulty=" + string(difficulty)
+	questionRequestUrl += "&type=" + string(quizType)
+	fmt.Println("Requesting questions on: ", questionRequestUrl)
 	responseBody := getSessionRequest(questionRequestUrl)
 
 	var qr QuestionResponse
 	var err = json.Unmarshal(responseBody, &qr)
+
 	if err != nil {
 		log.Fatal(err)
 	}
+	if qr.ResponseCode != 0 {
+		printResponseDescription(qr.ResponseCode)
+	}
+
 	return qr.Questions
+}
+
+func printResponseDescription(responseCode int) {
+	msg := fmt.Sprintf("ResponseCode %d: ", responseCode)
+	switch responseCode {
+	case 0:
+		msg += "**Success** Returned results successfully."
+	case 1:
+		msg += "**No Results** Could not return results. The API doesn't have enough questions for your query. (Ex. Asking for 50 Questions in a Category that only has 20.)"
+	case 2:
+		msg += "**Invalid Parameter** Contains an invalid parameter. Arguements passed in aren't valid. (Ex. Amount = Five)"
+	case 3:
+		msg += "**Token Not Found** Session Token does not exist."
+	case 4:
+		msg += "**Response Empty** Request has returned no questions for the specified query.Cause: Cannot fullfil request query(amount/selection). Can also be caused by Exhaust options of current Token -> then Token reset is necessary."
+	case 5:
+		msg += "**Rate Limit** Too many requests have occurred. Each IP can only access the API once every 5 seconds."
+	default:
+		msg = "ERROR: UNKNOW RESPONSE CODE: " + strconv.Itoa(responseCode)
+	}
+	fmt.Println(msg)
 }

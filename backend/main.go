@@ -14,8 +14,7 @@ func getFrontPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Should we keep the token if app crashes? And what if app is closed? (Would say forget and get a new one)
-
+	//postman connect via postman: ws://localhost:3333/ws
 	http.HandleFunc("/", getFrontPage)
 	http.HandleFunc("/questions", api.GetQuestionsWeb)
 	http.HandleFunc("/categories", api.GetCategoriesWeb)
