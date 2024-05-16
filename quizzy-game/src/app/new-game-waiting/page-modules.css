@@ -1,12 +1,15 @@
 .box{
-    background-color: #3182CE;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
 }
 
 .image{
-    margin: 0rem;
+    width:256px;
+    height:256px;
+    margin-top:180px; 
 }
 
 .tableContainer{
