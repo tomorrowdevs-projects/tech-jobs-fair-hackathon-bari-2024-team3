@@ -74,3 +74,8 @@ func requestNewSessionToken() {
 	sessionToken = tokenResponse.Token
 	fmt.Println("Session token has been updated!")
 }
+
+func resetToken() {
+	resetTokenUrl := "https://opentdb.com/api_token.php?command=reset"
+	getSessionRequest(resetTokenUrl)
+}

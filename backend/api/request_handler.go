@@ -81,6 +81,11 @@ func GetQuestions(categoryId int, difficulty dataTypes.Difficulty, quizType data
 		if err != nil {
 			log.Fatal(err)
 			break
+		} else if qr.ResponseCode == 4 {
+			printResponseDescription(qr.ResponseCode)
+			fmt.Println("Resetting Token and Retrying....")
+			resetToken()
+			break
 		} else if qr.ResponseCode == 5 {
 			printResponseDescription(qr.ResponseCode)
 			fmt.Println("Retry again in 5 Seconds....")
