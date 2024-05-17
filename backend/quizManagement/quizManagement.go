@@ -112,7 +112,7 @@ func HandleQuizUpdate(quizUpdate string, user *dataTypes.User) {
 		questionID := input[2]
 		answer := strings.Join(input[3:], " ")
 		timeReceived := time.Now()
-		fmt.Printf("Received answer \"%s\" for questionID %s \n at time: %s", answer, questionID, timeReceived.String())
+		fmt.Printf("Received answer \"%s\" for questionID %s \n at time: %s\n", answer, questionID, timeReceived.String())
 
 		handleAnswer(quizID, questionID, answer, timeReceived, user)
 	case "print":
@@ -131,10 +131,10 @@ func HandleQuizUpdate(quizUpdate string, user *dataTypes.User) {
 func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.Difficulty, quizType dataTypes.QuestionType) string {
 
 	questions := api.GetQuestions(category.Id, difficulty, quizType)
-	questionTriples := make(map[string]dataTypes.QuestionTriple)
+	questionTriples := make(map[string]*dataTypes.QuestionTriple)
 	for _, question := range questions {
 		questionTriple := question.ToTriple()
-		questionTriples[questionTriple.Id] = questionTriple
+		questionTriples[questionTriple.Id] = &questionTriple
 	}
 	newQuiz := dataTypes.Quiz{
 		Id:           uuid.NewString(),
@@ -144,7 +144,7 @@ func createQuiz(name string, category dataTypes.Category, difficulty dataTypes.D
 		Difficulty:   dataTypes.Easy,
 		Type:         dataTypes.MultipleChoice,
 		Questions:    questionTriples,
-		Participants: make(map[string]dataTypes.ParticipantsTuple),
+		Participants: make(map[string]*dataTypes.ParticipantsTuple),
 	}
 
 	quizzes[newQuiz.Id] = &newQuiz
@@ -168,7 +168,7 @@ func joinQuiz(quizID string, user *dataTypes.User) string {
 		Ref:   user,
 		Score: 0,
 	}
-	quiz.Participants[user.Id] = participantsTuple
+	quiz.Participants[user.Id] = &participantsTuple
 	fmt.Printf("Added user %s to Quiz: %s\n", user.Name, quizID)
 
 	msg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
@@ -184,7 +184,7 @@ func leaveQuiz(quizID string, user *dataTypes.User) string {
 	}
 	if _, ok := quiz.Participants[user.Id]; ok {
 		delete(quiz.Participants, user.Id)
-		fmt.Printf("Deleted user %s from Quiz %s: ", user.Name, quizID)
+		fmt.Printf("Deleted user %s from Quiz %s: \n", user.Name, quizID)
 	}
 	msg := fmt.Sprintf("QuizID: %s, QuizStatus: %s, participants: %s\n", quiz.Id, quiz.QuizStatus, quiz.ParticipantsAsString())
 	broadcastToParticipants(quizID, msg)
@@ -342,6 +342,7 @@ func handleAnswer(quizID string, questionID string, answer string, timeReceived 
 	}
 	question, questionOk := quiz.Questions[questionID]
 	if !questionOk {
+		fmt.Println(TAG, "Questions contains:", quiz.Questions)
 		fmt.Println(TAG, "Question not found.")
 		return
 	}
@@ -354,24 +355,22 @@ func handleAnswer(quizID string, questionID string, answer string, timeReceived 
 		return
 	}
 	timeSpent := timeReceived.Sub(question.LastAskedTime)
-	fmt.Printf("%sTime spent on answer: %s", TAG, timeSpent)
+	fmt.Printf("%sTime spent on answer: %s\n", TAG, timeSpent)
 
 	if timeSpent > answerTimeout {
-		statusMsg := fmt.Sprintf("%sAnswer took too long. Spent time: %fm:%fs, allowed time: %f seconds.", TAG, timeSpent.Minutes(), timeSpent.Seconds(), answerTimeout.Seconds())
+		statusMsg := fmt.Sprintf("%sAnswer took too long. Spent time: %fm:%fs, allowed time: %f seconds.\n", TAG, timeSpent.Minutes(), timeSpent.Seconds(), answerTimeout.Seconds())
 		user.MsgChannel <- statusMsg
 		fmt.Println(statusMsg)
 		return
 	}
-	// multiplierFactor := 10.0
-	points := 1 //((timeSpent.Seconds() * answerTimeout.Seconds()) * multiplierFactor) + float64(timeSpent.Milliseconds())
+	factor := 100.0
+	millSecRemain := float64(answerTimeout.Abs().Milliseconds()) - float64(timeSpent.Abs().Milliseconds())
+	points := int((millSecRemain) / factor)
 	participant := quiz.Participants[user.Id]
 	participant.Score += int(points)
 	statusMsg := fmt.Sprintf("%sUser: %s earned %d points giving a total score at %d in Quiz: %s", TAG, participant.Ref.Name, int(points), participant.Score, quiz.Name)
 	user.MsgChannel <- statusMsg
 	fmt.Println(statusMsg)
-
-	// defer hwg.Done()
-
 }
 
 func broadcastToParticipants(quizID string, msg string) {

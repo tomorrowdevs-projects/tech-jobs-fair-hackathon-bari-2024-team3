@@ -13,15 +13,15 @@ type ParticipantsTuple struct {
 
 // TODO: Need to have a participant/user type defined
 type Quiz struct {
-	Id            string                       `json:"id"`
-	Name          string                       `json:"name"`
-	QuizStatus    QuizStatus                   `json:"quizStatus"`
-	Category      Category                     `json:"category"`
-	Difficulty    Difficulty                   `json:"difficulty"`
-	Type          QuestionType                 `json:"type"`
-	Questions     map[string]QuestionTriple    `json:"questions"`
-	Participants  map[string]ParticipantsTuple `json:"participants"`
-	StatusChannel *chan QuizStatus             `json:"-"`
+	Id            string                        `json:"id"`
+	Name          string                        `json:"name"`
+	QuizStatus    QuizStatus                    `json:"quizStatus"`
+	Category      Category                      `json:"category"`
+	Difficulty    Difficulty                    `json:"difficulty"`
+	Type          QuestionType                  `json:"type"`
+	Questions     map[string]*QuestionTriple    `json:"questions"`
+	Participants  map[string]*ParticipantsTuple `json:"participants"`
+	StatusChannel *chan QuizStatus              `json:"-"`
 }
 
 func (q Quiz) String() string {
