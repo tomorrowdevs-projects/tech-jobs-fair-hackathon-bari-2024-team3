@@ -2,12 +2,21 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
 import './style/style-new-game-id.css';
+import { useParams } from 'next/navigation'
+import useWebSocket, { ReadyState } from "react-use-websocket";
 
 const GamePage = () => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const params = useParams()
+    const WS_URL = `ws://localhost:3333/ws/`;
+    const { sendMessage, lastMessage, readyState } = useWebSocket(
+      WS_URL,
+      {},
+    );
 
+    console.log(params.id_game)
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
