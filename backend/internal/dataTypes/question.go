@@ -4,11 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"time"
+
+	"github.com/google/uuid"
 )
 
-type QuestionTuple struct {
+type QuestionTriple struct {
+	Id            string
 	Ref           *Question
 	IsAskedStatus bool
+	LastAskedTime time.Time
 }
 
 type Question struct {
@@ -37,10 +42,12 @@ func (q Question) GetOptions() []string {
 	return options
 }
 
-func (q Question) ToTuple() QuestionTuple {
-	return QuestionTuple{&q, false}
+func (q Question) ToTriple() QuestionTriple {
+	questionId := uuid.NewString()
+	return QuestionTriple{questionId, &q, false, time.Time{}}
+
 }
 
-func (qt QuestionTuple) IsNotAsked() bool {
+func (qt QuestionTriple) IsNotAsked() bool {
 	return !qt.IsAskedStatus
 }

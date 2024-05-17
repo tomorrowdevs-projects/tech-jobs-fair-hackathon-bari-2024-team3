@@ -19,7 +19,7 @@ type Quiz struct {
 	Category      Category                     `json:"category"`
 	Difficulty    Difficulty                   `json:"difficulty"`
 	Type          QuestionType                 `json:"type"`
-	Questions     []QuestionTuple              `json:"questions"`
+	Questions     map[string]QuestionTriple    `json:"questions"`
 	Participants  map[string]ParticipantsTuple `json:"participants"`
 	StatusChannel *chan QuizStatus             `json:"-"`
 }

@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"quizzy_game/internal/dataTypes"
 	quizmanagement "quizzy_game/quizManagement"
+	"strings"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -15,13 +18,12 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func reader(conn *websocket.Conn) {
-	responseChan := make(chan string, 1)
+func reader(conn *websocket.Conn, user *dataTypes.User) {
 	var mutex sync.Mutex // Create a mutex to synchronize writes to the WebSocket connection
 
 	go func() {
 		for {
-			data, more := <-responseChan
+			data, more := <-user.MsgChannel
 			if more {
 				mutex.Lock()
 				err := conn.WriteMessage(websocket.TextMessage, []byte(data))
@@ -40,19 +42,28 @@ func reader(conn *websocket.Conn) {
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
-			close(responseChan)
+			close(user.MsgChannel)
 			return
+		}
+		msg := string(p)
+
+		input := strings.Fields(msg)
+		if len(input) > 1 && input[0] == "setUsername" {
+			newUsername := input[1]
+			user.Name = newUsername
+			user.MsgChannel <- "Your Username has been updated to: " + newUsername
+
 		}
 
 		// Adding data to the channel should also be synchronized
 		mutex.Lock()
-		quizmanagement.HandleQuizUpdate(string(p), responseChan)
+		go quizmanagement.HandleQuizUpdate(msg, user)
 		err = conn.WriteMessage(messageType, p)
 		mutex.Unlock()
 
 		if err != nil {
 			log.Println(err)
-			close(responseChan)
+			close(user.MsgChannel)
 			return
 		}
 	}
@@ -75,5 +86,13 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
-	reader(ws)
+
+	responseChan := make(chan string, 1)
+	newUserId := uuid.NewString()
+	newUser := dataTypes.User{
+		Id:         newUserId,
+		Name:       "user" + newUserId[0:4],
+		MsgChannel: responseChan,
+	}
+	reader(ws, &newUser)
 }
