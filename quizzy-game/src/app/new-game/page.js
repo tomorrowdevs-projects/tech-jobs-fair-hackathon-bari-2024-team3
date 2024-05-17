@@ -55,7 +55,7 @@ export default function Home() {
           />
         </InputGroup>
         <Link
-          href={`/new-game/${room?.trimStart()}`}
+          href={`/new-game/${room?.trimStart() || "33594879-2da1-4fb2-854e-5d6e1f1eb49f"}`}
           onClick={createQuiz}
           style={{ marginBottom: 32 }}
         >
