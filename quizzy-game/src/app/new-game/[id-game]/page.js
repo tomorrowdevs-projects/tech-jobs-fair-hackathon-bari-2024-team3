@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex } from '@chakra-ui/react';
+import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex, Text } from '@chakra-ui/react';
 import './style/style-new-game-id.css';
 import Link from 'next/link';
 
@@ -9,12 +9,23 @@ const GamePage = () => {
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [clickedButtonIndex, setClickedButtonIndex] = useState(null);
-    const [answered, setAnswered] = useState(false); 
+    const [answered, setAnswered] = useState(false);
+    const [timer, setTimer] = useState(10); // Imposta il timer a 10 secondi
+    const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+    const [quizCompleted, setQuizCompleted] = useState(false);
 
     const handleButtonClick = (idx) => {
         if (!answered) {
             setClickedButtonIndex(idx);
-            setAnswered(true); 
+            setAnswered(true);
+
+            // Verifica se la risposta è corretta
+            const isCorrect = currentQuestion.correct_answer === currentQuestion.answers[idx];
+            if (isCorrect) {
+                setCorrectAnswersCount((prevCount) => prevCount += 1);
+            }
+
+            setTimeout(handleNextQuestion, 1000); // Aspetta 1 secondo prima di passare alla prossima domanda
         }
     };
 
@@ -42,10 +53,28 @@ const GamePage = () => {
         fetchQuestions();
     }, []);
 
+    useEffect(() => {
+        if (answered || timer <= 0) {
+            if (timer <= 0) handleNextQuestion();
+            return;
+        }
+
+        const interval = setInterval(() => {
+            setTimer((prevTimer) => prevTimer - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [answered, timer]);
+
     const handleNextQuestion = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % questions.length);
-        setClickedButtonIndex(null);
-        setAnswered(false); 
+        if (currentIndex + 1 < questions.length) {
+            setCurrentIndex((prevIndex) => (prevIndex + 1));
+            setClickedButtonIndex(null);
+            setAnswered(false);
+            setTimer(10); // Reimposta il timer a 10 secondi per la prossima domanda
+        } else {
+            setQuizCompleted(true);
+        }
     };
 
     // Funzione per mischiare le risposte in modo casuale
@@ -64,11 +93,33 @@ const GamePage = () => {
 
     const currentQuestion = questions[currentIndex];
 
+    if (quizCompleted) {
+        return (
+            <Box className="box">
+                <Image src="/image-logo.svg" alt="Descrizione dell'immagine" className="image" />
+                <Flex alignItems="center" flexDirection="column" marginTop="80px">
+                    <Text fontSize="2xl" marginBottom="20px">Quiz completato!</Text>
+                    <Text fontSize="2xl" marginBottom="20px">Grazie per aver giocato!</Text>
+                    <Text fontSize="lg" marginBottom="10px">Risposte corrette: {correctAnswersCount}</Text>
+                    <Text fontSize="lg">Risposte sbagliate: {questions.length - correctAnswersCount}</Text>
+                </Flex>
+            </Box>
+        );
+    }
+
     return (
         <div>
             <Box className="box">
                 <Image src="/image-logo.svg" alt="Descrizione dell'immagine" className="image" />
-                <Flex alignItems="center" flexDirection="column" marginTop="80px">
+                <Flex alignItems="center" flexDirection="column" marginTop="20px">
+                    <InputGroup marginBottom="20px">
+                        <Input
+                            className="input-timer"
+                            value={timer}
+                            readOnly
+                            style={{ height: '50px', width: '50px', textAlign: 'center', fontSize: '2rem', marginLeft:'125px' }}
+                        />
+                    </InputGroup>
                     <InputGroup>
                         <InputLeftElement width="120px"></InputLeftElement>
                         <Input
@@ -92,7 +143,6 @@ const GamePage = () => {
                                         <a href="#" key={idx} onClick={(e) => { e.preventDefault(); handleButtonClick(idx); }}>
                                             <button 
                                                 className={`button-one ${buttonClass}`} 
-                                                
                                             >
                                                 {answer}
                                             </button>
@@ -100,10 +150,8 @@ const GamePage = () => {
                                     );
                                 })}
                             </Flex>
-
                         </Box>
                     )}
-                    <Button className="button-next" onClick={handleNextQuestion}>Prossima domanda</Button>
                 </Flex>
             </Box>
         </div>
