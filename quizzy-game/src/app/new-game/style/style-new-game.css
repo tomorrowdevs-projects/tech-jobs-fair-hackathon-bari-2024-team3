@@ -1,0 +1,53 @@
+
+.box{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+}
+
+.image{
+    width:256px;
+    height:256px;
+    margin-top:180px; 
+}
+
+.button-one{
+    size: lg;
+    height: 48px;
+    width: 320px;
+    border: 2px solid #34D399; /* Cambia il colore del bordo come desiderato */
+    border-color: green.500;
+    margin-top: 20px;
+    background-color: #ECC94B;
+    pointer-events: none;
+    color: black;
+    border-radius: 6px;
+    
+}
+
+
+
+.input-room-code{
+    width:315px; 
+    height:48px; 
+    border:2px;
+    border-radius: 6px;
+}
+
+.button-two{
+    size: 40px;
+    height: 40px;
+    width: 40px;
+    border: 2px solid #34D399; /* Cambia il colore del bordo come desiderato */
+    border-color: green.500;
+    margin-top: 40px;
+    background-color: #ECC94B;
+    margin-left: 280px;
+    font-size: 24px;
+    line-height: 40px;
+    pointer-events: none;
+    color: black;
+    border-radius: 6px;
+}

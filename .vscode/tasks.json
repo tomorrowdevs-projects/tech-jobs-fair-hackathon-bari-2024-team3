@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "start",
+			"path": "quiz",
+			"problemMatcher": [],
+			"label": "npm: start - quiz",
+			"detail": "react-scripts start"
+		}
+	]
+}

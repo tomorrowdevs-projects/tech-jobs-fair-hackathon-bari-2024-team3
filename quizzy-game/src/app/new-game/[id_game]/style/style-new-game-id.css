@@ -1,0 +1,47 @@
+
+.box{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    margin-bottom: 20px;
+}
+
+.image{
+    width:156px;
+    height:156px;
+    margin-top:0px; 
+}
+
+.button-one{
+    size: lg;
+    height: 48px;
+    width: 320px;
+    border: 2px solid #34D399; /* Cambia il colore del bordo come desiderato */
+    border-color: green.500;
+    margin-top: 10px;
+    background-color: #ECC94B;
+    pointer-events: none;
+    color: black;
+    border-radius: 6px;
+    
+}
+.red-button {
+    background-color: red; /* Cambia il colore del bottone in rosso */
+}
+
+.green-button {
+    background-color: green; /* Cambia il colore del bottone in rosso */
+}
+
+
+.input-room-code{
+    width:320px; 
+    height:146px; 
+    border:1px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    
+}
+

@@ -1,0 +1,24 @@
+.box{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+}
+
+.image{
+    width:256px;
+    height:256px;
+    margin-top:180px; 
+}
+
+.tableContainer{
+    background-color: white;
+    height: auto;
+    width: 20rem;
+    border-radius: 0.5rem;
+}
+.titleTable{
+    color: #2D3748;
+    text-align: center;
+}
