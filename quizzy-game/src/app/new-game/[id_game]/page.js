@@ -2,21 +2,33 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Image, Button, InputGroup, Input, InputLeftElement, Flex, Text } from '@chakra-ui/react';
 import './style/style-new-game-id.css';
-import { useParams } from 'next/navigation'
-import useWebSocket, { ReadyState } from "react-use-websocket";
+import Link from 'next/link';
 
 const GamePage = () => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const params = useParams()
-    const WS_URL = `ws://localhost:3333/ws/`;
-    const { sendMessage, lastMessage, readyState } = useWebSocket(
-      WS_URL,
-      {},
-    );
+    const [clickedButtonIndex, setClickedButtonIndex] = useState(null);
+    const [answered, setAnswered] = useState(false);
+    const [timer, setTimer] = useState(10); // Imposta il timer a 10 secondi
+    const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+    const [quizCompleted, setQuizCompleted] = useState(false);
 
-    console.log(params.id_game)
+    const handleButtonClick = (idx) => {
+        if (!answered) {
+            setClickedButtonIndex(idx);
+            setAnswered(true);
+
+            // Verifica se la risposta è corretta
+            const isCorrect = currentQuestion.correct_answer === currentQuestion.answers[idx];
+            if (isCorrect) {
+                setCorrectAnswersCount((prevCount) => prevCount += 1);
+            }
+
+            setTimeout(handleNextQuestion, 1000); // Aspetta 1 secondo prima di passare alla prossima domanda
+        }
+    };
+
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
