@@ -1,0 +1,46 @@
+.box{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+}
+h2{
+    height: 0.8rem;
+    color: white;
+}
+
+.otherWinners{
+    height: 13rem;
+    display: flex;
+    
+}
+
+.winnerOne{
+    height: 13rem;
+    width: 13rem;
+}
+
+.winnerTwo{
+    height: 8rem;
+    width: 8rem;
+    align-self: self-end;
+}
+
+.winnerThree{
+    height: 8rem;
+    width: 8rem;
+    align-self: self-end;
+}
+
+.button{
+    size: lg;
+    height: 48px;
+    width: 320px;
+    margin-top: 20px;
+    border-radius: 0.5rem;
+    background-color: #ECC94B;
+    pointer-events: none;
+    color: black;
+    
+}
