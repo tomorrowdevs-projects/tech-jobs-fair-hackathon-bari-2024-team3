@@ -373,16 +373,34 @@ func handleAnswer(quizID string, questionID string, answer string, timeReceived 
 	fmt.Println(statusMsg)
 }
 
-func broadcastToParticipants(quizID string, msg string) {
-	go func() {
-		quiz, ok := quizzes[quizID]
-		if !ok {
-			fmt.Println("Quiz not found.")
-			return
-		}
-		for _, participant := range quiz.Participants {
-			participant.Ref.MsgChannel <- msg
-		}
+func broadcastToParticipants(quizID, msg string) {
+	quiz, ok := quizzes[quizID]
+	if !ok {
+		fmt.Println("Quiz not found.")
+		return
+	}
 
+	var wg sync.WaitGroup
+	for _, participant := range quiz.Participants {
+		wg.Add(1)
+		go broadcastToParticipant(participant, msg, &wg)
+	}
+
+	wg.Wait()
+}
+
+func broadcastToParticipant(participant *dataTypes.ParticipantsTuple, msg string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+		}
 	}()
+
+	select {
+	case participant.Ref.MsgChannel <- msg:
+		fmt.Printf("BROADCAST: Message sent to Participant %s\n", participant.Ref.Id)
+	default:
+		fmt.Printf("BROADCAST: Error sending message to Participant %s\n", participant.Ref.Id)
+	}
 }
