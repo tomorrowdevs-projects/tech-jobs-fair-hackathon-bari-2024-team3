@@ -38,6 +38,8 @@ func reader(conn *websocket.Conn, user *dataTypes.User) {
 		}
 	}()
 
+	user.MsgChannel <- fmt.Sprintf("UserID: %s", user.Id)
+
 	for {
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
