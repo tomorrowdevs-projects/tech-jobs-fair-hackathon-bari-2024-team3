@@ -3,11 +3,17 @@ package dataTypes
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/google/uuid"
 )
 
-type QuestionTuple struct {
+type QuestionTriple struct {
+	Id            string
 	Ref           *Question
 	IsAskedStatus bool
+	LastAskedTime time.Time
 }
 
 type Question struct {
@@ -28,10 +34,20 @@ func (q Question) String() string {
 	return string(qJSON)
 }
 
-func (q Question) ToTuple() QuestionTuple {
-	return QuestionTuple{&q, false}
+func (q Question) GetOptions() []string {
+	options := append(q.WrongAnswer, q.CorrectAnswer)
+	rand.Shuffle(len(options), func(i, j int) {
+		options[i], options[j] = options[j], options[i]
+	})
+	return options
 }
 
-func (qt QuestionTuple) IsNotAsked() bool {
+func (q Question) ToTriple() QuestionTriple {
+	questionId := uuid.NewString()
+	return QuestionTriple{questionId, &q, false, time.Time{}}
+
+}
+
+func (qt QuestionTriple) IsNotAsked() bool {
 	return !qt.IsAskedStatus
 }

@@ -18,6 +18,7 @@ func main() {
 	http.HandleFunc("/questions", api.GetQuestionsWeb)
 	http.HandleFunc("/categories", api.GetCategoriesWeb)
 	http.HandleFunc("/ws", sessionManagement.WsEndpoint)
+	http.HandleFunc("/ws/", sessionManagement.WsEndpoint)
 
 	http.ListenAndServe(":3333", nil)
 

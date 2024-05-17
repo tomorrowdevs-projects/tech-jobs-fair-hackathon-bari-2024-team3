@@ -1,0 +1,16 @@
+FROM golang:1.21.8
+
+WORKDIR /app
+
+COPY go.mod .
+COPY main.go .
+COPY ./api .
+COPY ./internal .
+COPY ./quizManagement .
+COPY ./sessionManagement .
+
+
+RUN go build -o bin .
+
+
+ENTRYPOINT [ "/app/bin" ]

@@ -66,19 +66,41 @@ func GetQuestions(categoryId int, difficulty dataTypes.Difficulty, quizType data
 	questionRequestUrl += "&difficulty=" + string(difficulty)
 	questionRequestUrl += "&type=" + string(quizType)
 	fmt.Println("Requesting questions on: ", questionRequestUrl)
-	responseBody := getSessionRequest(questionRequestUrl)
 
 	var qr QuestionResponse
-	var err = json.Unmarshal(responseBody, &qr)
+	retries := 0
+	for {
+		if retries >= 3 {
+			fmt.Println("GetQuestions: Max retries exceeded!")
+			return []dataTypes.Question{}
+		}
+		responseBody := getSessionRequest(questionRequestUrl)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	if qr.ResponseCode != 0 {
-		printResponseDescription(qr.ResponseCode)
-	}
+		var err = json.Unmarshal(responseBody, &qr)
 
+		if err != nil {
+			log.Fatal(err)
+			break
+		} else if qr.ResponseCode == 4 {
+			printResponseDescription(qr.ResponseCode)
+			fmt.Println("Resetting Token and Retrying....")
+			resetToken()
+			break
+		} else if qr.ResponseCode == 5 {
+			printResponseDescription(qr.ResponseCode)
+			fmt.Println("Retry again in 5 Seconds....")
+			time.Sleep(5 * time.Second)
+			break
+		} else if qr.ResponseCode != 0 {
+			printResponseDescription(qr.ResponseCode)
+			break
+		} else {
+			return qr.Questions
+		}
+
+	}
 	return qr.Questions
+
 }
 
 func printResponseDescription(responseCode int) {

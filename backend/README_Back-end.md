@@ -28,14 +28,19 @@ connect websocket to the following:
 In the WebSocket you can send in requests to the backend and see the results in the terminal of the backend:
 __Commands:__
 
-- createQuiz <quizName> <userId||username>
-    - createQuiz FirstQuiz Christian
 
-- joinQuiz <quizId> <userId||username>
-    - joinQuiz 05126db1-dbb2-49a3-b187-9bbe46bc48a4 Jack
-
-- leaveQuiz <quizId> <userId||username>
-    - leaveQuiz 05126db1-dbb2-49a3-b187-9bbe46bc48a4 Jack
 
 - printing all quizzes data:
     - print
+
+
+
+setUsername <newUsername>
+
+createQuiz <quizName> 
+createQuiz <quizName> <categoryId(9-32)> <easy||medium||hard> <multiple||boolean>
+joinQuiz <quizID>
+leaveQuiz <quizID>
+startQuiz <quizID>
+answerQuestion <QuizID> <QuestionID> <Answer>
+
