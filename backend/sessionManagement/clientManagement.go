@@ -18,6 +18,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+var users = make(map[string]*dataTypes.User)
+
 func reader(conn *websocket.Conn, user *dataTypes.User) {
 	var mutex sync.Mutex // Create a mutex to synchronize writes to the WebSocket connection
 
@@ -81,6 +83,33 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
+	parts := strings.Split(r.URL.Path, "/")
+	var id string
+	if len(parts) > 2 {
+		id = strings.TrimSpace(parts[2])
+	}
+
+	var user *dataTypes.User
+
+	if id != "" {
+		fmt.Println("User Connected with UserID: ", id)
+		user = users[id]
+		user.MsgChannel = make(chan string, 1)
+	}
+
+	if user == nil {
+		fmt.Println("User Connected without UserID. Creating new")
+		responseChan := make(chan string, 1)
+		newUserId := uuid.NewString()
+		newUser := dataTypes.User{
+			Id:         newUserId,
+			Name:       "user" + newUserId[0:4],
+			MsgChannel: responseChan,
+		}
+		users[newUser.Id] = &newUser
+		user = &newUser
+	}
+
 	log.Println("Client Connected")
 	err = ws.WriteMessage(1, []byte("Hi Client!"))
 	if err != nil {
@@ -89,12 +118,5 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
 
-	responseChan := make(chan string, 1)
-	newUserId := uuid.NewString()
-	newUser := dataTypes.User{
-		Id:         newUserId,
-		Name:       "user" + newUserId[0:4],
-		MsgChannel: responseChan,
-	}
-	reader(ws, &newUser)
+	reader(ws, user)
 }
