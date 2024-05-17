@@ -1,4 +1,5 @@
 'use client'
+
 import { Box, Image, Heading, Avatar, Button, Link } from '@chakra-ui/react'; 
 import './page-modules.css'; 
 
