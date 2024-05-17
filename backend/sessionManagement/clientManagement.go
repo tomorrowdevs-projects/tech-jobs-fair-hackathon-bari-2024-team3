@@ -94,11 +94,13 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
 	if id != "" {
 		fmt.Println("User Connected with UserID: ", id)
 		user = users[id]
-		user.MsgChannel = make(chan string, 1)
+		if user != nil {
+			user.MsgChannel = make(chan string, 1)
+		}
 	}
 
 	if user == nil {
-		fmt.Println("User Connected without UserID. Creating new")
+		fmt.Println("User Connected without UserID or  with invalid UserID. Creating new User!")
 		responseChan := make(chan string, 1)
 		newUserId := uuid.NewString()
 		newUser := dataTypes.User{
