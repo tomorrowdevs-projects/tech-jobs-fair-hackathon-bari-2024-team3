@@ -27,7 +27,13 @@
     border-radius: 6px;
     
 }
+.red-button {
+    background-color: red; /* Cambia il colore del bottone in rosso */
+}
 
+.green-button {
+    background-color: green; /* Cambia il colore del bottone in rosso */
+}
 
 
 .input-room-code{
